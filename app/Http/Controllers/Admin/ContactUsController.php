@@ -2,28 +2,42 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\ContactUs\Admin;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\ContactUs;
+use App\Services\ContactUsService;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class ContactUsController extends Controller
 {
-    public function index()
+    public function __construct(
+        protected ContactUsService $contactUsService
+    ) {}
+
+    public function index(): View
     {
-        $messages = ContactUs::all();
-        return view('Admin.contacts.index', compact('messages'));
+        $messages = $this->contactUsService->all();
+
+        return view(
+            'Admin.contacts.index',
+            compact('messages')
+        );
     }
 
-    public function show(ContactUs $contact)
+    public function show(ContactUs $contact): View
     {
-        $message = $contact;
-        return view('Admin.contacts.show', compact('message'));
+        return view(
+            'Admin.contacts.show',
+            ['message' => $contact]
+        );
     }
 
-    public function destroy(ContactUs $contact)
+    public function destroy(ContactUs $contact): RedirectResponse
     {
-        $contact->delete();
-        return redirect()->route('admin.contact-us.index')->with('warning', 'پیام با موفقیت حذف شد');
+        $this->contactUsService->destroy($contact);
+
+        return redirect()
+            ->route('admin.contact-us.index')
+            ->with('warning', 'پیام با موفقیت حذف شد');
     }
 }

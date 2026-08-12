@@ -2,40 +2,38 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\AboutUs;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-
+use App\Http\Requests\Admin\UpdateAboutUsRequest;
+use App\Services\AboutUsService;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class AboutUsController extends Controller
 {
-    public function show()
+    public function __construct(
+        protected AboutUsService $aboutUsService
+    ) {}
+
+    public function show(): View
     {
-        $aboutUs = AboutUs::firstOrFail();
+        $aboutUs = $this->aboutUsService->get();
+
         return view('Admin.about-us.show', compact('aboutUs'));
     }
 
-    public function edit()
+    public function edit(): View
     {
-        $aboutUs = AboutUs::firstOrFail();
+        $aboutUs = $this->aboutUsService->get();
+
         return view('Admin.about-us.edit', compact('aboutUs'));
     }
 
-    public function update(Request $request)
+    public function update(UpdateAboutUsRequest $request): RedirectResponse
     {
-        $aboutUs = AboutUs::firstOrFail();
-        $request->validate([
-            'title' => 'required|string',
-            'link' => 'required|string',
-            'body' => 'required|string'
-        ]);
+        $this->aboutUsService->update($request->validated());
 
-        $aboutUs->update([
-            'title' => $request->title,
-            'link' => $request->link,
-            'body' => $request->body,
-
-        ]);
-        return redirect()->route('admin.about-us.show')->with('success', 'درباره ما با موفقیت ویرایش شد');
+        return redirect()
+            ->route('admin.about-us.show')
+            ->with('success', 'درباره ما با موفقیت ویرایش شد');
     }
 }

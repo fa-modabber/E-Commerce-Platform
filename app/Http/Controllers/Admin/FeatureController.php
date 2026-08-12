@@ -5,63 +5,71 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Feature;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-
+use App\Http\Requests\Admin\StoreFeatureRequest;
+use App\Http\Requests\Admin\UpdateFeatureRequest;
+use App\Services\FeatureService;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class FeatureController extends Controller
 {
-    public function index()
+    public function __construct(
+        protected FeatureService $featureService
+    ) {}
+
+    public function index(): View
     {
-        $features = Feature::all();
-        return view('Admin.features.index', compact('features'));
+        $features = $this->featureService->all();
+
+        return view(
+            'Admin.features.index',
+            compact('features')
+        );
     }
 
-    public function create()
+    public function create(): View
     {
         return view('Admin.features.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreFeatureRequest $request): RedirectResponse
     {
-        $request->validate([
-            'icon' => 'required|string',
-            'title' => 'required|string',
-            'body' => 'required|string'
-        ]);
+        $this->featureService->store(
+            $request->validated()
+        );
 
-        Feature::create([
-            'icon' => $request->icon,
-            'title' => $request->title,
-            'body' => $request->body
-        ]);
-
-        return redirect()->route('admin.features.index')->with('success', 'ویژگی با موفقیت ساخته شد');
+        return redirect()
+            ->route('admin.features.index')
+            ->with('success', 'ویژگی با موفقیت ساخته شد');
     }
 
-    public function edit(Feature $feature)
+    public function edit(Feature $feature): View
     {
-        return view('Admin.features.edit', compact('feature'));
+        return view(
+            'Admin.features.edit',
+            compact('feature')
+        );
     }
 
-    public function update(Request $request, Feature $feature)
-    {
-        $request->validate([
-            'icon' => 'required|string',
-            'title' => 'required|string',
-            'body' => 'required|string'
-        ]);
+    public function update(
+        UpdateFeatureRequest $request,
+        Feature $feature
+    ): RedirectResponse {
+        $this->featureService->update(
+            $feature,
+            $request->validated()
+        );
 
-        $feature->update([
-            'icon' => $request->icon,
-            'title' => $request->title,
-            'body' => $request->body
-        ]);
-
-        return redirect()->route('admin.features.index')->with('success', 'ویژگی با موفقیت ویرایش شد');
+        return redirect()
+            ->route('admin.features.index')
+            ->with('success', 'ویژگی با موفقیت ویرایش شد');
     }
 
-    public function destroy(Feature $feature)
+    public function destroy(Feature $feature): RedirectResponse
     {
-        $feature->delete();
-        return redirect()->route('admin.features.index')->with('warning', 'ویژگی با موفقیت حذف شد');
+        $this->featureService->destroy($feature);
+        return redirect()
+            ->route('admin.features.index')
+            ->with('warning', 'ویژگی با موفقیت حذف شد');
     }
 }

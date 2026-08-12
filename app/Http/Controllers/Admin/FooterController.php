@@ -5,54 +5,46 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Footer;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\UpdateFooterRequest;
+use App\Services\FooterService;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class FooterController extends Controller
 {
-    public function show()
+    public function __construct(
+        protected FooterService $footerService
+    ) {}
+
+    public function show(): View
     {
-        $footer = Footer::firstOrFail();
-        return view('Admin.footer.index', compact('footer'));
+        $footer = $this->footerService->get();
+
+        return view(
+            'Admin.footer.index',
+            compact('footer')
+        );
     }
 
-    public function edit()
+    public function edit(): View
     {
-        $footer = Footer::firstOrFail();
-        return view('Admin.footer.edit', compact('footer'));
+        $footer = $this->footerService->get();
+
+        return view(
+            'Admin.footer.edit',
+            compact('footer')
+        );
     }
 
-    public function update(Request $request)
-    {
-        $footer = Footer::firstOrFail();
+    public function update(
+        UpdateFooterRequest $request
+    ): RedirectResponse {
+        $this->footerService->update(
+            $request->validated()
+        );
 
-        $request->validate([
-            'col_1_title' => 'required|string',
-            'col_1_body_1' => 'required|string',
-            'col_1_body_2' => 'nullable|string',
-            'col_2_title' => 'required|string',
-            'col_2_body' => 'required|string',
-            'col_3_title' => 'required|string',
-            'col_3_body' => 'required|string',
-            'social_media_1' => 'nullable|string',
-            'social_media_2' => 'nullable|string',
-            'social_media_3' => 'nullable|string',
-            'social_media_4' => 'nullable|string',
-            'copyright' => 'required|string'
-        ]);
-        
-        $footer->update([
-            'col_1_title' => $request->col_1_title,
-            'col_1_body_1' => $request->col_1_body_1,
-            'col_1_body_2' => $request->col_1_body_2,
-            'col_2_title' => $request->col_2_title,
-            'col_2_body' => $request->col_2_body,
-            'col_3_title' => $request->col_3_title,
-            'col_3_body' => $request->col_3_body,
-            'social_media_1' => $request->social_media_1,
-            'social_media_2' => $request->social_media_2,
-            'social_media_3' => $request->social_media_3,
-            'social_media_4' => $request->social_media_4,
-            'copyright' => $request->copyright
-        ]);
-        return redirect()->route('admin.footer.index')->with('success', 'فوتر با موفقیت ویرایش شد');
+        return redirect()
+            ->route('admin.footer.index')
+            ->with('success', 'فوتر با موفقیت ویرایش شد');
     }
 }

@@ -2,58 +2,74 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Category;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-
+use App\Http\Requests\Admin\StoreCategoryRequest;
+use App\Http\Requests\Admin\UpdateCategoryRequest;
+use App\Models\Category;
+use App\Services\CategoryService;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function __construct(
+        protected CategoryService $categoryService
+    ) {}
+
+    public function index(): View
     {
-        $categories = Category::all();
-        return view('Admin.categories.index', compact('categories'));
+        $categories = $this->categoryService->all();
+
+        return view(
+            'Admin.categories.index',
+            compact('categories')
+        );
     }
 
-    public function create()
+    public function create(): View
     {
         return view('Admin.categories.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreCategoryRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string',
-            'status' => 'boolean'
-        ]);
-        Category::create([
-            'name' => $request->name,
-            'status' => $request->status
-        ]);
-        return redirect()->route('admin.categories.index')->with('success', 'دسته بندی با موفقیت ایجاد شد');
+        $this->categoryService->store(
+            $request->validated()
+        );
+
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'دسته بندی با موفقیت ایجاد شد');
     }
 
-    public function edit(Category $category)
+    public function edit(Category $category): View
     {
-        return view('admin.categories.edit', compact('category'));
+        return view(
+            'admin.categories.edit',
+            compact('category')
+        );
     }
 
-    public function update(Request $request, Category $category)
-    {
-        $request->validate([
-            'name' => 'required|string',
-            'status' => 'boolean'
-        ]);
+    public function update(
+        UpdateCategoryRequest $request,
+        Category $category
+    ): RedirectResponse {
+        $this->categoryService->update(
+            $category,
+            $request->validated()
+        );
 
-        $category->update([
-            'name' => $request->name,
-            'status' => $request->status
-        ]);
-        return redirect()->route('admin.categories.index')->with('success', 'دسته بندی با موفقیت آپدیت شد');
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'دسته بندی با موفقیت آپدیت شد');
     }
-    public function destroy(Category $category)
+
+     public function destroy(Category $category): RedirectResponse
     {
-        $category->delete();
-        return redirect()->route('admin.categories.index')->with('warning', 'دسته بندی با موفقیت حذف شد');
+        $this->categoryService->destroy($category);
+
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('warning', 'دسته بندی با موفقیت حذف شد');
     }
 }
