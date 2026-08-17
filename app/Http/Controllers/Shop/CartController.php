@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Store;
+namespace App\Http\Controllers\Shop;
 
 use App\Models\Coupon;
 use App\Models\Product;
