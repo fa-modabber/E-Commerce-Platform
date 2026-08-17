@@ -18,7 +18,8 @@ Route::prefix('admin')
         // ----------------------------------------
         // Dashboard Routes
         // ----------------------------------------
-        Route::get('/', [Admin\HomeController::class, 'index'])->name('dashboard');
+        Route::get('/', [Admin\HomeController::class, 'index'])
+        ->name('dashboard');
 
 
         // ----------------------------------------

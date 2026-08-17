@@ -6,66 +6,69 @@ use App\Models\Slider;
 use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreSliderRequest;
+use App\Http\Requests\Admin\UpdateSliderRequest;
+use App\Services\SliderService;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class SliderController extends Controller
 {
+    public function __construct(
+        protected SliderService $sliderService
+    ) {}
 
-    public function index()
+    public function index(): View
     {
-        $sliders = Slider::all();
-        return view('Admin.sliders.index', compact('sliders'));
+        $sliders = $this->sliderService->all();
+        return view(
+            'Admin.sliders.index',
+            compact('sliders')
+        );
     }
 
-    public function create()
+    public function create(): View
     {
         return view('Admin.sliders.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreSliderRequest $request): RedirectResponse
     {
-        $request->validate([
-            'title' => 'required|string',
-            'link_title' => 'required|string',
-            'link_address' => 'required|string',
-            'body' => 'required|string'
-        ]);
+        $this->sliderService->store($request->validated());
 
-        Slider::create([
-            'title' => $request->title,
-            'link_title' => $request->link_title,
-            'link_address' => $request->link_address,
-            'body' => $request->body
-        ]);
-
-        return redirect()->route('admin.sliders.index')->with('success', 'اسلایدر با موفقیت ساخته شد');
+        return redirect()
+            ->route('admin.sliders.index')
+            ->with('success', 'اسلایدر با موفقیت ساخته شد');
     }
 
-    public function edit(Slider $slider)
+    public function edit(Slider $slider): View
     {
-        return view('Admin.sliders.edit', compact('slider'));
-    }
-    public function update(Request $request, Slider $slider)
-    {
-        $request->validate([
-            'title' => 'required|string',
-            'link_title' => 'required|string',
-            'link_address' => 'required|string',
-            'body' => 'required|string'
-        ]);
-
-        $slider->update([
-            'title' => $request->title,
-            'link_title' => $request->link_title,
-            'link_address' => $request->link_address,
-            'body' => $request->body
-        ]);
-
-        return redirect()->route('admin.sliders.index')->with('success', 'اسلایدر با موفقیت ویرایش شد');
+        return view(
+            'Admin.sliders.edit',
+            compact('slider')
+        );
     }
 
-    public function destroy(Slider $slider)
+    public function update(
+        UpdateSliderRequest $request,
+        Slider $slider
+    ): RedirectResponse {
+
+        $slider = $this->sliderService->update(
+            $slider,
+            $request->validated()
+        );
+
+        return redirect()
+            ->route('admin.sliders.index')
+            ->with('success', 'اسلایدر با موفقیت ویرایش شد');
+    }
+
+    public function destroy(Slider $slider): RedirectResponse
     {
-        $slider->delete();
-        return redirect()->route('admin.sliders.index')->with('warning', 'اسلایدر با موفقیت حذف شد');
+        $this->sliderService->destroy($slider);
+        return redirect()
+            ->route('admin.sliders.index')
+            ->with('warning', 'اسلایدر با موفقیت حذف شد');
     }
 }

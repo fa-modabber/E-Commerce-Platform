@@ -5,8 +5,9 @@ namespace App\Services;
 use App\Models\Footer;
 use Illuminate\Database\Eloquent\Collection;
 
-class FooterService{
-     public function get(): Footer
+class FooterService
+{
+    public function get(): Footer
     {
         return Footer::firstOrFail();
     }

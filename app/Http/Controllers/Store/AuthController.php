@@ -41,7 +41,6 @@ class AuthController extends Controller
             }
             $response = send_otp_sms($user->cellphone, $otpCode, $template = "test");
 
-
             return response()->json(['login_token' => $loginToken, 'response' => $response], 200);
         } catch (\Exception $ex) {
             return response()->json(['errors' => $ex->getMessage()], 500);
