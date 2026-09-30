@@ -2,69 +2,164 @@
 
 A Laravel-based e-commerce platform for managing products, customers, shopping carts, discounts, and store content. The project includes a customer-facing storefront and an administration panel for managing the store.
 
-## Tech Stack
+## 🟠 Tech Stack
 
 * **Backend:** PHP, Laravel
 * **Database:** MySQL
-* **Authentication:** Mobile number and OTP
-* **Frontend:** [Add frontend technology]
-* **API:** RESTful API
-* **Testing:** [Add testing framework]
-* **Development Environment:** Docker
+* **Frontend:** Laravel Blade, Bootstrap, Alpine.js
+* **Development Environment:** Docker & Docker Compose
+---
 
-## Features
+## 🟠 Requirements
+
+Make sure the following are installed on your system:
+
+- Docker
+- Docker Compose
+
+---
+## 🟠 Installation
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/fa-modabber/Onlineshop-merchify.git
+```
+
+### 2. Navigate to the project directory
+
+```bash
+cd E-Commerce Platform
+```
+
+### 3. Create the environment file
+
+```bash
+cp .env.example .env
+```
+Update some configuration in `.env`:
+
+```env
+APP_URL=http://localhost:8000
+DB_CONNECTION=mysql
+DB_HOST=db
+DB_PORT=3306
+DB_DATABASE=platform
+DB_USERNAME=platform
+DB_PASSWORD=platform
+```
+
+### 4. Build and start the containers
+
+```bash
+docker compose up -d --build
+```
+
+### 5. Generate the application key
+```bash
+docker compose exec app php artisan key:generate
+```
+
+### 6. Run database migrations and seeders
+
+```bash
+docker compose exec app php artisan migrate --seed
+```
+
+### 7. Run queue worker
+
+```bash
+docker compose exec app php artisan queue:work
+```
+
+### 8. Access the application
+
+The following diagram provides a visual overview of the application services and their corresponding access URLs.
+```text
+Browser
+   │
+   ├── :8000 → Laravel Container
+   │
+   └── :8080 → phpMyAdmin Container
+                    │
+                    ▼
+               MySQL Container
+```
+
+The API will be available at:
+
+```text
+http://localhost:8000
+```
+
+phpMyAdmin will be available at:
+
+```text
+http://localhost:8080
+```
+
+### 6. Stop the containers
+
+```bash
+docker compose down
+```
+
+To remove the database volume as well:
+
+```bash
+docker compose down -v
+```
+
+---
+
+## 🟠 Testing (coming soon)
+
+---
+
+## 🟠 Postman Collection (coming soon)
+
+The Postman collection is available in:
+
+```text
+/docs/postman/ecommerce-platform.json
+```
+
+---
+
+## 🟠 Features
 
 ### Storefront
 
-* Home page and About Us page
-* Product catalog with:
-
-  * Search
-  * Category filtering
-  * Stock availability filtering
-  * Price sorting
-  * Pagination
-* Product details with recommended products
-* Product sale pricing with configurable date ranges
-* Product primary and additional images
-* Mobile number authentication with one-time passwords (OTP)
-* OTP resend and logout
-* SMS integration with a test mode
-* Shopping cart for authenticated users:
-
-  * Add products
-  * Update item quantities
-  * Remove items
-  * Clear the cart
-* Discount codes with validation and expiration handling
-* User profile management
-* Address management
-* Wishlist
-* Contact Us form with message management
+* Home and About Us pages
+* Product catalog with search, filtering, sorting, and pagination
+* Product details and recommendations
+* Sale pricing with configurable date ranges
+* Product image management
+* Mobile OTP authentication with resend and logout
+* SMS integration with test mode
+* Shopping cart and discount codes
+* User profile, addresses, and wishlist
+* Contact Us form and message management
 
 ### Admin Panel
 
 * Dashboard
-* Product management
-* Category management
-* Slider management
-* Product attribute management
-* Discount code management
+* Product, category, slider, attribute, and discount management
 * User management
-* About Us content management
-* Footer content management
+* About Us and footer content management
 * Contact message management
 
-## Security
+---
 
-* Authentication using mobile number and OTP
-* Role-based access control for administrative features
-* Server-side request validation
-* Authorization checks for protected resources
-* Protection of sensitive administrative functionality
-* Secure handling of authentication and user data
+## 🟠 Database
 
-## Future Improvements
+---
+
+## 🟠 Security (comin soon)
+
+---
+
+## 🟠 Future Improvements
 
 * Order management and order lifecycle
 * Payment gateway integration
