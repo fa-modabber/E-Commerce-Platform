@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +13,23 @@ use Illuminate\Support\Str;
 
 class ProductService
 {
+    public function randomAvailableProducts(int $count = 4): Collection
+    {
+        return Product::available()
+            ->get()
+            ->random($count);
+    }
+
+    public function searchProducts(
+        ?string $search,
+        array $filters,
+        int $perPage = 6
+    ) {
+        return Product::search($search)
+            ->filter($filters)
+            ->paginate($perPage);
+    }
+
     public function paginate(int $perPage = 4): LengthAwarePaginator
     {
         return Product::paginate($perPage);

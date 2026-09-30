@@ -5,31 +5,23 @@ namespace App\Http\Controllers\Shop;
 use App\Models\ContactUs;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Shop\StoreContactUsRequest;
+use Illuminate\Contracts\View\View;
 
 
 class ContactUsController extends Controller
 {
-    public function index()
+    public function index(): View
     {
-        return view('Store.contact-us');
+        return view('Shop.contact-us');
     }
 
-    public function store(Request $request)
+    public function store(StoreContactUsRequest $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required|email',
-            'subject' => 'required',
-            'body' => 'required',
-        ]);
+        ContactUs::create($request->validated());
 
-        ContactUs::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'subject' => $request->subject,
-            'body' => $request->body,
-        ]);
-
-        return redirect()->back()->with('success', 'پیام با موفقیت ارسال شد');
+        return redirect()
+            ->back()
+            ->with('success', 'پیام با موفقیت ارسال شد');
     }
 }

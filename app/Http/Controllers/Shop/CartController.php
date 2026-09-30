@@ -2,155 +2,85 @@
 
 namespace App\Http\Controllers\Shop;
 
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Shop\Cart\AddToCartRequest;
+use App\Http\Requests\Shop\Cart\CartProductRequest;
+use App\Http\Requests\Shop\Cart\CheckCouponRequest;
 use App\Models\Coupon;
 use App\Models\Product;
+use App\Services\CartService;
+use App\Services\CouponService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use App\Http\Controllers\Controller;
-
 
 class CartController extends Controller
 {
+    public function __construct(
+        protected CartService $cartService,
+        protected CouponService $couponService,
+    ) {}
 
     public function index(Request $request)
     {
-        $cart = $request->session()->get('cart', []);
-        $cart_total_price = 0;
-        if (!empty($cart)) {
-            foreach ($cart as $key => $item) {
-                $price = $item['is_on_sale'] ? $item['sale_price'] : $item['price'];
-                $cart_total_price += $price * $item['qty'];
-            }
-        }
+        $cart = $this->cartService->getCart($request);
+        $cart_total_price = $this->cartService->calculateTotal($cart);
 
-        return view('cart.index', compact('cart', 'cart_total_price'));
+        return view('cart.index', compact(
+            'cart',
+            'cart_total_price'
+        ));
     }
 
-    public function add(Request $request)
+    public function add(AddToCartRequest $request)
     {
-        $request->validate([
-            'product_id' => 'required|integer|exists:products,id',
-            'qty' => 'required|integer'
-        ]);
+        $product = Product::findOrFail(
+            $request->validated('product_id')
+        );
 
-        $product = Product::findOrFail($request->product_id);
+        $this->cartService->addToCart(
+            $request->validated(),
+            $product
+        );
 
-        $cart = $request->session()->get('cart', []);
-
-        if (isset($cart[$product->id])) {
-
-            if ($request->qty >= $product->quantity) {
-                return redirect()->back()->with('error', 'تعداد محصول درخواستی بیش از حد مجاز است');
-            }
-            $cart[$product->id]['qty'] = $request->qty;
-        } else {
-            $cart[$product->id] = [
-                'name' => $product->name,
-                'quantity' => $product->quantity,
-                'is_on_sale' => $product->is_on_sale,
-                'price' => $product->price,
-                'sale_price' => $product->sale_price,
-                'sale_percent' => $product->sale_percent,
-                'primary_image' => $product->primary_image,
-                'qty' => $request->qty
-            ];
-        }
-        $request->session()->put('cart', $cart);
-        return redirect()->back()->with('success', 'محصول به سبد خرید اضافه شد');
+        return redirect()
+            ->back()
+            ->with('success', 'محصول به سبد خرید اضافه شد');
     }
 
-    public function increment(Request $request)
+    public function decrement(CartProductRequest $request)
     {
-        $request->validate([
-            'product_id' => 'required|integer|exists:products,id',
-        ]);
 
-        $product = Product::findOrFail($request->product_id);
+        $product = Product::findOrFail(
+            $request->validated('product_id')
+        );
 
-        $cart = $request->session()->get('cart', []);
+        $removed = $this->cartService->removeFromCart(
+            $request->validated(),
+            $product
+        );
 
-        if (isset($cart[$product->id])) {
-
-            if ($cart[$product->id]['qty'] >= $product->quantity) {
-                return redirect()->back()->with('error', 'محصول با حداکثر تعداد به سبد خرید اضافه شده');
-            }
-            $cart[$product->id]['qty']++;
-        } else {
-            $cart[$product->id] = [
-                'name' => $product->name,
-                'quantity' => $product->quantity,
-                'is_on_sale' => $product->is_on_sale,
-                'price' => $product->price,
-                'sale_price' => $product->sale_price,
-                'sale_percent' => $product->sale_percent,
-                'primary_image' => $product->primary_image,
-                'qty' => 1
-            ];
-        }
-        $request->session()->put('cart', $cart);
-        return redirect()->back()->with('success', 'محصول به سبد خرید اضافه شد');
+        return back()->with(
+            'success',
+            $removed
+                ? 'محصول با موفقیت از سبد خرید حذف شد'
+                : 'محصول از سبد خرید کم شد'
+        );
     }
 
-    public function decrement(Request $request)
+    public function clear(Request $request)
     {
-        $request->validate([
-            'product_id' => 'required|integer|exists:products,id',
-        ]);
+        $this->cartService->clearCart($request);
 
-        $product = Product::findOrFail($request->product_id);
-
-        $cart = $request->session()->get('cart', []);
-
-        if (isset($cart[$product->id])) {
-
-            if ($cart[$product->id]['qty'] == 1) {
-                unset($cart[$product->id]);
-                session()->put('cart', $cart);
-                return redirect()->back()->with('success', 'محصول با موفقیت از سبد خرید حذف شد');
-            }
-            $cart[$product->id]['qty'] = $cart[$product->id]['qty'] - 1;
-            $request->session()->put('cart', $cart);
-            return redirect()->back()->with('success', 'محصول از سبد خرید کم شد');
-        } else {
-            return redirect()->back()->with('error', 'محصول موردنظر در سبد خرید موجود نیست');
-        }
+        return redirect()
+            ->route('products.menu')
+            ->with('success', 'سبد خرید با موفقیت خالی شد.');
     }
 
-    public function remove(Request $request)
+    public function checkCoupon(CheckCouponRequest $request)
     {
-        $request->validate([
-            'product_id' => 'required|integer|exists:products,id',
-        ]);
-
-        $product = Product::findOrFail($request->product_id);
-        $cart = $request->session()->get('cart', []);
-        if (isset($cart[$product->id])) {
-            unset($cart[$product->id]);
-            session()->put('cart', $cart);
-            return redirect()->back()->with('success', 'محصول با موفقیت از سبد خرید حذف شد');
-        } else {
-            return redirect()->back()->with('error', 'محصول موردنظر در سبد خرید موجود نیست');
-        }
-    }
-
-    public function clear()
-    {
-        session()->forget('cart');
-        return redirect()->route('products.menu')->with('success', 'سبد خرید با موفقیت خالی شد.');
-    }
-
-    public function checkCoupon(Request $request)
-    {
-        $request->validate([
-            'code' => 'required|string'
-        ]);
-
-        $coupon = Coupon::where('code', $request->code)->where('expired_at', '>', Carbon::now())->first();
-        if ($coupon == null) {
-            return redirect()->route('cart.index')->withErrors(['code' => 'کدتخفیف واردشده معتبر نیست'])->withInput();;
-        }
-
-        $request->session()->put('coupon', ['code' => $coupon->code, 'percentage' => $coupon->percentage, 'expired_at' => $coupon->expired_at]);
+        $this->couponService->apply(
+            $request,
+            $request->validated('code')
+        );
         return redirect()->route('cart.index');
     }
 }

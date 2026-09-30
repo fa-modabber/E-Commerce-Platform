@@ -59,7 +59,7 @@
                                                     </td>
                                                     <td>
                                                         <div class="input-counter">
-                                                            <a href="{{ route('cart.increment', ['product_id' => $key]) }}"
+                                                            <a href="{{ route('cart.add', ['product_id' => $key]) }}"
                                                                 class="plus-btn">
                                                                 +
                                                             </a>
@@ -78,11 +78,6 @@
                                                         @endphp
                                                         <span>{{ number_format($item['qty'] * $price) }}</span>
                                                         <span class="ms-1">تومان</span>
-                                                    </td>
-                                                    <td>
-                                                        <a href="{{ route('cart.remove', ['product_id' => $key]) }}">
-                                                            <i class="bi bi-x text-danger fw-bold fs-4 cursor-pointer"></i>
-                                                        </a>
                                                     </td>
                                                 </tr>
                                             @endforeach

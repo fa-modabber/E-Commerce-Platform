@@ -168,7 +168,7 @@
                                                     @endif
                                                     <div class="d-flex">
                                                         <a class="me-2"
-                                                            href="{{ route('cart.increment', ['product_id' => $product->id]) }}">
+                                                            href="{{ route('cart.add', ['product_id' => $product->id]) }}">
                                                             <i class="bi bi-cart-fill text-white fs-6"></i>
                                                         </a>
                                                         <a
