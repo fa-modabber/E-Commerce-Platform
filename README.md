@@ -23,7 +23,7 @@ Make sure the following are installed on your system:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/fa-modabber/Onlineshop-merchify.git
+git clone https://github.com/fa-modabber/E-Commerce-Platform.git
 ```
 
 ### 2. Navigate to the project directory
